@@ -1,0 +1,21 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[dev]
+  command = "npm run dev"
+  targetPort = 3000
+  autoLaunch = false
+  functionsPort = 9999
+
+[functions]
+  node_bundler = "esbuild"
+
+[functions."simulate"]
+  external_node_modules = ["@google/genai"]
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
