@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import Navigation from './components/Navigation';
 import Home from './components/Home';
 import BlindSimulation from './components/BlindSimulation';
+import FreeBlindDetail from './components/FreeBlindDetail';
 import KakaoFloat from './components/KakaoFloat';
 
 // === Custom Gold Cursor ===
@@ -140,6 +141,10 @@ export default function App() {
 
       {currentPage === 'home' ? (
         <Home onNavigate={setCurrentPage} />
+      ) : currentPage === 'free-blind' ? (
+        <main className="pt-20">
+          <FreeBlindDetail onNavigate={setCurrentPage} />
+        </main>
       ) : (
         <main className="pt-20 bg-stone-50 min-h-screen">
           <BlindSimulation />

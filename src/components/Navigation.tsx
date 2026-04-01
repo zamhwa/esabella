@@ -49,6 +49,16 @@ export default function Navigation({ currentPage, onNavigate }: NavigationProps)
             HOME
           </button>
           <button
+            onClick={() => onNavigate('free-blind')}
+            className={`text-sm font-medium transition-colors ${
+              scrolled
+                ? (currentPage === 'free-blind' ? 'text-amber-800 font-bold' : 'text-stone-400 hover:text-stone-700')
+                : (currentPage === 'free-blind' ? 'text-amber-400 font-bold' : 'text-white/60 hover:text-white')
+            }`}
+          >
+            FREE BLIND
+          </button>
+          <button
             onClick={() => {
               if (currentPage !== 'home') onNavigate('home');
               setTimeout(() => {
@@ -119,6 +129,12 @@ export default function Navigation({ currentPage, onNavigate }: NavigationProps)
             HOME
           </button>
           <button
+            onClick={() => { onNavigate('free-blind'); setIsMenuOpen(false); }}
+            className="block w-full text-left px-4 py-3 text-amber-800 font-bold rounded-xl hover:bg-amber-50"
+          >
+            FREE BLIND
+          </button>
+          <button
             onClick={() => { onNavigate('simulation'); setIsMenuOpen(false); }}
             className="flex items-center gap-2 w-full text-left px-4 py-3 bg-stone-900 text-white rounded-xl font-bold"
           >
@@ -139,7 +155,7 @@ export default function Navigation({ currentPage, onNavigate }: NavigationProps)
             방문 예약
           </button>
           <a
-            href="tel:010-0000-0000"
+            href="tel:010-4132-9852"
             className="flex items-center gap-2 w-full text-left px-4 py-3 text-stone-500 font-medium rounded-xl hover:bg-stone-50"
           >
             <Phone className="h-4 w-4" />

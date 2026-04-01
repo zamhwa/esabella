@@ -1,7 +1,6 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { Camera, Upload, Check, Loader2, Sparkles, RotateCcw, Download, Move, Phone } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Camera, Upload, Check, Loader2, Sparkles, RotateCcw, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { generateFreeBlindLayout } from '../utils/freeBlindRenderer';
 
 const BLIND_COLORS = [
   { name: '퓨어 화이트', hex: '#FFFFFF', id: 'pure-white' },
@@ -16,10 +15,8 @@ const BLIND_COLORS = [
   { name: '차콜', hex: '#5C5C5C', id: 'charcoal' },
 ];
 
-const U_BLIND_WIDTH_MM = 775;
 
 const BLIND_TYPES = [
-  { name: '프리블라인드', id: 'free-blind', desc: '별도 문의 (010-0000-0000)', image: '/images/free-blind.jpg', inquiry: true },
   { name: '우드 블라인드', id: 'wood', desc: '천연 원목의 따뜻한 클래식', image: '/images/wood-blind-new.jpg' },
   { name: '콤비 블라인드', id: 'combi', desc: '채광과 프라이버시의 자유로운 조절', image: '/images/combi-blind-new.jpg' },
   { name: '허니콤 블라인드', id: 'honeycomb', desc: '탁월한 단열과 소음 차단', image: '/images/honeycomb-blind-new.jpg' },
@@ -119,7 +116,7 @@ export default function BlindSimulation() {
   const [image, setImage] = useState<string | null>(null);
   const [imageNatural, setImageNatural] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
   const [selectedColor, setSelectedColor] = useState(BLIND_COLORS[0]);
-  const [selectedType, setSelectedType] = useState(BLIND_TYPES[1]);
+  const [selectedType, setSelectedType] = useState(BLIND_TYPES[0]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [windowWidthMm, setWindowWidthMm] = useState<number>(0);
@@ -127,12 +124,6 @@ export default function BlindSimulation() {
   const [windowRect, setWindowRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const [step, setStep] = useState<'upload' | 'select' | 'ready'>('upload');
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const uBackRow = windowWidthMm > 0 ? Math.max(1, Math.round(windowWidthMm / U_BLIND_WIDTH_MM)) : 0;
-  const uFrontRow = uBackRow > 1 ? uBackRow - 1 : 0;
-  const uBlindCount = uBackRow + uFrontRow;
-
-  const isFreeBlind = selectedType.id === 'free-blind';
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -143,15 +134,10 @@ export default function BlindSimulation() {
         setImage(src);
         setResultImage(null);
         setWindowRect(null);
-        // 이미지 원본 크기 파악
         const img = new Image();
         img.onload = () => {
           setImageNatural({ w: img.naturalWidth, h: img.naturalHeight });
-          if (isFreeBlind) {
-            setStep('select');
-          } else {
-            setStep('ready');
-          }
+          setStep('ready');
         };
         img.src = src;
       };
@@ -159,57 +145,11 @@ export default function BlindSimulation() {
     }
   };
 
-  // 프리블라인드: 선택 모드 진입
   useEffect(() => {
-    if (image && isFreeBlind && !windowRect) {
-      setStep('select');
-    } else if (image && !isFreeBlind) {
+    if (image) {
       setStep('ready');
     }
   }, [selectedType.id]);
-
-  const handleWindowSelect = (rect: { x: number; y: number; w: number; h: number }) => {
-    setWindowRect(rect);
-    setStep('ready');
-  };
-
-  // Canvas에서 방 사진 위에 블라인드 레이아웃을 직접 합성
-  const compositeBlindOnRoom = async (): Promise<string> => {
-    return new Promise((resolve) => {
-      const roomImg = new Image();
-      roomImg.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = roomImg.naturalWidth;
-        canvas.height = roomImg.naturalHeight;
-        const ctx = canvas.getContext('2d')!;
-
-        // 방 사진 그리기
-        ctx.drawImage(roomImg, 0, 0);
-
-        if (!windowRect) {
-          resolve(canvas.toDataURL('image/jpeg', 0.9));
-          return;
-        }
-
-        // 창문 영역 (픽셀 좌표)
-        const wx = windowRect.x * canvas.width;
-        const wy = windowRect.y * canvas.height;
-        const ww = windowRect.w * canvas.width;
-        const wh = windowRect.h * canvas.height;
-
-        // 블라인드 레이아웃 생성
-        const layoutDataUrl = generateFreeBlindLayout(selectedColor.hex, uBackRow, uFrontRow);
-        const layoutImg = new Image();
-        layoutImg.onload = () => {
-          // 레이아웃을 창문 영역에 맞게 그리기
-          ctx.drawImage(layoutImg, wx, wy, ww, wh);
-          resolve(canvas.toDataURL('image/jpeg', 0.9));
-        };
-        layoutImg.src = layoutDataUrl;
-      };
-      roomImg.src = image!;
-    });
-  };
 
   const urlToBase64 = async (url: string): Promise<string> => {
     const res = await fetch(url);
@@ -226,30 +166,7 @@ export default function BlindSimulation() {
     setIsProcessing(true);
 
     try {
-      if (isFreeBlind && windowRect && uBackRow > 0) {
-        // === 프리블라인드: 직접 합성 후 AI 리터칭 ===
-        const composited = await compositeBlindOnRoom();
-        const compositedBase64 = composited.split(',')[1];
-
-        const response = await fetch('/api/simulate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            compositeImage: compositedBase64,
-            blindId: 'free-blind',
-            colorName: selectedColor.name,
-            backRowCount: uBackRow,
-            frontRowCount: uFrontRow,
-          }),
-        });
-
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Simulation failed');
-        if (data.image) {
-          setResultImage(`data:image/png;base64,${data.image}`);
-        }
-      } else {
-        // === 다른 블라인드: 기존 방식 ===
+      {
         let roomBase64: string;
         if (image.startsWith('data:')) {
           roomBase64 = image.split(',')[1];
@@ -391,31 +308,8 @@ export default function BlindSimulation() {
                     className="w-full px-3 py-2.5 rounded-lg border border-stone-300 text-sm focus:ring-2 focus:ring-amber-300 focus:border-amber-500 outline-none" />
                 </div>
               </div>
-              {isFreeBlind && windowWidthMm > 0 && (
-                <div className="bg-white rounded-lg p-3 border border-amber-100 space-y-1">
-                  <div className="flex justify-between"><span className="text-xs text-stone-500">U자 1개 폭</span><span className="text-xs font-bold">775mm</span></div>
-                  <div className="flex justify-between"><span className="text-xs text-stone-500">창문 폭</span><span className="text-xs font-bold">{windowWidthMm.toLocaleString()}mm</span></div>
-                  <div className="flex justify-between"><span className="text-xs text-stone-500">뒷열</span><span className="text-xs font-bold">{uBackRow}개</span></div>
-                  <div className="flex justify-between"><span className="text-xs text-stone-500">앞열 (뒷열-1)</span><span className="text-xs font-bold">{uFrontRow}개</span></div>
-                  <div className="flex justify-between pt-1 border-t border-amber-100">
-                    <span className="text-sm font-bold text-amber-800">총 필요 개수</span>
-                    <span className="text-lg font-bold text-amber-800">{uBlindCount}개</span>
-                  </div>
-                </div>
-              )}
             </div>
           </section>
-
-          {/* 프리블라인드: 별도 문의 안내 */}
-          {isFreeBlind && (
-            <div className="bg-amber-50 border border-amber-300 rounded-xl p-5 text-center space-y-3">
-              <p className="text-sm font-bold text-amber-900">프리블라인드는 별도 문의로 안내드립니다</p>
-              <p className="text-xs text-amber-700">프리블라인드 시뮬레이션은 전문 상담을 통해 진행됩니다.<br/>아래 연락처로 문의해 주세요.</p>
-              <a href="tel:010-4132-9852" className="inline-flex items-center gap-2 bg-amber-800 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-amber-900 transition-colors">
-                <Phone className="h-4 w-4" /> 010-4132-9852
-              </a>
-            </div>
-          )}
 
           {/* Color */}
           <section>
@@ -439,7 +333,7 @@ export default function BlindSimulation() {
 
           {/* Generate */}
           <button
-            disabled={!image || isProcessing || isFreeBlind || (isFreeBlind && (!windowRect || uBackRow === 0))}
+            disabled={!image || isProcessing}
             onClick={runSimulation}
             className="w-full py-4 bg-stone-900 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-stone-800 transition-all shadow-lg"
           >
@@ -462,13 +356,7 @@ export default function BlindSimulation() {
               </div>
             )}
 
-            {/* 프리블라인드: 창문 영역 선택 모드 */}
-            {image && isFreeBlind && step === 'select' && !resultImage && !isProcessing && (
-              <WindowSelector imageSrc={image} onSelect={handleWindowSelect} />
-            )}
-
-            {/* 일반 미리보기 (선택 완료 or 다른 블라인드) */}
-            {image && !resultImage && !isProcessing && !(isFreeBlind && step === 'select') && (
+            {image && !resultImage && !isProcessing && (
               <div className="relative h-full w-full">
                 <img src={image} alt="Original" className="h-full w-full object-contain" />
                 {/* 선택된 창문 영역 표시 */}
@@ -493,7 +381,7 @@ export default function BlindSimulation() {
                     <Sparkles className="h-3 w-3" /> AI 시뮬레이션 결과
                   </div>
                   <div className="absolute bottom-4 right-4 flex gap-2">
-                    <button onClick={() => { setResultImage(null); if (isFreeBlind) setStep('select'); }} className="bg-white/90 backdrop-blur-sm text-stone-700 px-4 py-2 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-lg hover:bg-white">
+                    <button onClick={() => { setResultImage(null); }} className="bg-white/90 backdrop-blur-sm text-stone-700 px-4 py-2 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-lg hover:bg-white">
                       <RotateCcw className="h-3.5 w-3.5" /> 다시하기
                     </button>
                     <button onClick={downloadResult} className="bg-stone-900/90 backdrop-blur-sm text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-lg hover:bg-stone-900">
@@ -527,12 +415,8 @@ export default function BlindSimulation() {
               </div>
             </div>
             <div className="p-4 bg-white rounded-xl border border-stone-100 shadow-sm">
-              <p className="text-[10px] uppercase tracking-wider text-stone-400 font-bold mb-1">
-                {isFreeBlind ? 'U자 개수' : '스마트 홈'}
-              </p>
-              <p className="text-sm font-bold text-stone-800">
-                {isFreeBlind ? (uBlindCount > 0 ? `${uBlindCount}개` : '크기 입력 필요') : 'IoT 연동 가능'}
-              </p>
+              <p className="text-[10px] uppercase tracking-wider text-stone-400 font-bold mb-1">스마트 홈</p>
+              <p className="text-sm font-bold text-stone-800">IoT 연동 가능</p>
             </div>
           </div>
         </div>
