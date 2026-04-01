@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { Camera, Upload, Check, Loader2, Sparkles, RotateCcw, Download, Move } from 'lucide-react';
+import { Camera, Upload, Check, Loader2, Sparkles, RotateCcw, Download, Move, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { generateFreeBlindLayout } from '../utils/freeBlindRenderer';
 
@@ -19,7 +19,7 @@ const BLIND_COLORS = [
 const U_BLIND_WIDTH_MM = 775;
 
 const BLIND_TYPES = [
-  { name: '프리블라인드', id: 'free-blind', desc: '이사벨라 시그니처 — U자형 곡선(775mm)의 빛 확산', image: '/images/free-blind.jpg' },
+  { name: '프리블라인드', id: 'free-blind', desc: '별도 문의 (010-0000-0000)', image: '/images/free-blind.jpg', inquiry: true },
   { name: '우드 블라인드', id: 'wood', desc: '천연 원목의 따뜻한 클래식', image: '/images/wood-blind-new.jpg' },
   { name: '콤비 블라인드', id: 'combi', desc: '채광과 프라이버시의 자유로운 조절', image: '/images/combi-blind-new.jpg' },
   { name: '허니콤 블라인드', id: 'honeycomb', desc: '탁월한 단열과 소음 차단', image: '/images/honeycomb-blind-new.jpg' },
@@ -119,7 +119,7 @@ export default function BlindSimulation() {
   const [image, setImage] = useState<string | null>(null);
   const [imageNatural, setImageNatural] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
   const [selectedColor, setSelectedColor] = useState(BLIND_COLORS[0]);
-  const [selectedType, setSelectedType] = useState(BLIND_TYPES[0]);
+  const [selectedType, setSelectedType] = useState(BLIND_TYPES[1]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [windowWidthMm, setWindowWidthMm] = useState<number>(0);
@@ -406,18 +406,14 @@ export default function BlindSimulation() {
             </div>
           </section>
 
-          {/* 프리블라인드: 창문 선택 안내 */}
-          {isFreeBlind && image && step === 'select' && (
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-              <p className="text-sm font-bold text-blue-800 mb-1">창문 영역 선택</p>
-              <p className="text-xs text-blue-600">오른쪽 사진에서 블라인드를 설치할 창문 영역을 마우스로 드래그하세요.</p>
-            </div>
-          )}
-          {isFreeBlind && windowRect && (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-2">
-              <Check className="h-4 w-4 text-green-600" />
-              <p className="text-xs text-green-700 font-bold">창문 영역 선택 완료</p>
-              <button onClick={() => { setWindowRect(null); setStep('select'); }} className="ml-auto text-xs text-green-600 underline">다시 선택</button>
+          {/* 프리블라인드: 별도 문의 안내 */}
+          {isFreeBlind && (
+            <div className="bg-amber-50 border border-amber-300 rounded-xl p-5 text-center space-y-3">
+              <p className="text-sm font-bold text-amber-900">프리블라인드는 별도 문의로 안내드립니다</p>
+              <p className="text-xs text-amber-700">프리블라인드 시뮬레이션은 전문 상담을 통해 진행됩니다.<br/>아래 연락처로 문의해 주세요.</p>
+              <a href="tel:010-4132-9852" className="inline-flex items-center gap-2 bg-amber-800 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-amber-900 transition-colors">
+                <Phone className="h-4 w-4" /> 010-4132-9852
+              </a>
             </div>
           )}
 
@@ -443,7 +439,7 @@ export default function BlindSimulation() {
 
           {/* Generate */}
           <button
-            disabled={!image || isProcessing || (isFreeBlind && (!windowRect || uBackRow === 0))}
+            disabled={!image || isProcessing || isFreeBlind || (isFreeBlind && (!windowRect || uBackRow === 0))}
             onClick={runSimulation}
             className="w-full py-4 bg-stone-900 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-stone-800 transition-all shadow-lg"
           >

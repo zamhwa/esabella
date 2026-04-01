@@ -637,9 +637,9 @@ export default function Home({ onNavigate }: { onNavigate: (page: string) => voi
           <p className="text-stone-500 text-lg mb-12">전문 컨설턴트가 방문하여 공간에 맞는 최적의 블라인드를 제안해드립니다.</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             {[
-              { icon: Phone, label: '전화 상담', value: '010-0000-0000', href: 'tel:010-0000-0000' },
+              { icon: Phone, label: '전화 상담', value: '010-4132-9852', href: 'tel:010-4132-9852' },
               { icon: Mail, label: '이메일', value: 'info@esabella.kr', href: 'mailto:info@esabella.kr' },
-              { icon: MapPin, label: '쇼룸', value: '서울시 강남구', href: '#' },
+              { icon: MapPin, label: '매장', value: '경기도 고양시 일산서구 덕이로292번길 70, 1층 02호', href: '#' },
             ].map((item, i) => (
               <a key={i} href={item.href} className="p-8 bg-white rounded-2xl border border-stone-100 hover:border-amber-200 hover:shadow-lg transition-all group">
                 <item.icon className="h-6 w-6 text-amber-800 mx-auto mb-3" />
@@ -681,11 +681,17 @@ export default function Home({ onNavigate }: { onNavigate: (page: string) => voi
               </div>
             </div>
           </div>
-          <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-white/30">&copy; 2026 Esabella Blinds. All rights reserved.</p>
-            <div className="flex gap-6 text-xs text-white/30">
-              <span className="hover:text-white/60 cursor-pointer">개인정보처리방침</span>
-              <span className="hover:text-white/60 cursor-pointer">이용약관</span>
+          <div className="border-t border-white/10 pt-8 space-y-4">
+            <div className="text-xs text-white/30 leading-relaxed space-y-1">
+              <p>상호: 이사벨라 일산 | 대표: 김성현 | 사업자등록번호: 490-26-01823</p>
+              <p>주소: 경기도 고양시 일산서구 덕이로292번길 70, 1층 02호(덕이동) | 전화: 010-4132-9852</p>
+            </div>
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <p className="text-xs text-white/30">&copy; 2026 이사벨라 일산. All rights reserved.</p>
+              <div className="flex gap-6 text-xs text-white/30">
+                <span className="hover:text-white/60 cursor-pointer">개인정보처리방침</span>
+                <span className="hover:text-white/60 cursor-pointer">이용약관</span>
+              </div>
             </div>
           </div>
         </div>
