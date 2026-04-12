@@ -4,6 +4,11 @@ import Navigation from './components/Navigation';
 import Home from './components/Home';
 import BlindSimulation from './components/BlindSimulation';
 import FreeBlindDetail from './components/FreeBlindDetail';
+import DoubleBlindDetail from './components/DoubleBlindDetail';
+import MagicBlindDetail from './components/MagicBlindDetail';
+import VolumeCurtainDetail from './components/VolumeCurtainDetail';
+import ChiffonCurtainDetail from './components/ChiffonCurtainDetail';
+import PebblesoftCurtainDetail from './components/PebblesoftCurtainDetail';
 import KakaoFloat from './components/KakaoFloat';
 
 // === Custom Gold Cursor ===
@@ -144,6 +149,26 @@ export default function App() {
       ) : currentPage === 'free-blind' ? (
         <main className="pt-20">
           <FreeBlindDetail onNavigate={setCurrentPage} />
+        </main>
+      ) : currentPage === 'double-blind' ? (
+        <main className="pt-20">
+          <DoubleBlindDetail onNavigate={setCurrentPage} />
+        </main>
+      ) : currentPage === 'magic-blind' ? (
+        <main className="pt-20">
+          <MagicBlindDetail onNavigate={setCurrentPage} />
+        </main>
+      ) : currentPage === 'volume-curtain' ? (
+        <main className="pt-20">
+          <VolumeCurtainDetail onNavigate={setCurrentPage} />
+        </main>
+      ) : currentPage === 'chiffon-curtain' ? (
+        <main className="pt-20">
+          <ChiffonCurtainDetail onNavigate={setCurrentPage} />
+        </main>
+      ) : currentPage === 'pebblesoft-curtain' ? (
+        <main className="pt-20">
+          <PebblesoftCurtainDetail onNavigate={setCurrentPage} />
         </main>
       ) : (
         <main className="pt-20 bg-stone-50 min-h-screen">
