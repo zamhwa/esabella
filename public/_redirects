@@ -1,0 +1,5 @@
+# Serve static pSEO pages directly (before SPA fallback catches them)
+/loc/*   /loc/:splat   200
+
+# SPA fallback for everything else
+/*       /index.html   200
